@@ -102,11 +102,11 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px clamp(20px, 5vw, 60px);
+    padding: 12px clamp(20px, 5vw, 60px);
     background: rgba(10,10,10,0.95);
     backdrop-filter: blur(16px);
     border-bottom: 1px solid rgba(201,168,76,0.2);
-    min-height: 80px;
+    min-height: 96px;
   }
 
   .nav-logo {
@@ -117,17 +117,17 @@
   }
 
   .nav-logo img {
-    height: 60px;
+    height: 90px;
     width: auto;
     display: block;
     object-fit: contain;
     transition: opacity 0.25s, filter 0.25s;
-    filter: brightness(1.08) contrast(1.05);
+    filter: brightness(1.12) contrast(1.08) drop-shadow(0 0 14px rgba(201,168,76,0.3));
   }
 
   .nav-logo img:hover {
     opacity: 0.85;
-    filter: brightness(1.15) contrast(1.08);
+    filter: brightness(1.2) contrast(1.1) drop-shadow(0 0 20px rgba(201,168,76,0.5));
   }
 
   .nav-logo span { color: var(--cream); font-weight: 300; }
@@ -920,17 +920,17 @@
   @media (max-width: 768px) {
     .nav-links { display: none; }
     .hamburger { display: flex; }
-    .nav-logo img { height: 52px; }
-    nav { min-height: 72px; padding: 10px clamp(16px, 4vw, 32px); }
-    .mobile-menu { top: 72px; }
+    .nav-logo img { height: 72px; }
+    nav { min-height: 88px; padding: 10px clamp(16px, 4vw, 32px); }
+    .mobile-menu { top: 88px; }
   }
 
   @media (max-width: 480px) {
     .hero-btns { flex-direction: column; align-items: center; }
     .btn-gold, .btn-outline { width: 100%; text-align: center; }
-    .nav-logo img { height: 46px; }
-    nav { min-height: 68px; }
-    .mobile-menu { top: 68px; }
+    .nav-logo img { height: 62px; }
+    nav { min-height: 80px; }
+    .mobile-menu { top: 80px; }
   }
 </style>
 </head>
@@ -1370,7 +1370,7 @@
 
 <!-- FOOTER -->
 <footer>
-  <img src="images/rivero-logo.png" alt="Rivero&Co Workspace" style="height: 72px; width: auto; display: block; margin: 0 auto 24px; filter: brightness(1.1) contrast(1.05);">
+  <img src="images/rivero-logo.png" alt="Rivero&Co Workspace" style="height: 110px; width: auto; display: block; margin: 0 auto 24px; filter: brightness(1.12) contrast(1.08) drop-shadow(0 0 16px rgba(201,168,76,0.3));">
   <div class="footer-text">Jl. Manyar Rejo III / 15, Surabaya 60118</div>
   <div class="footer-text">© 2026 Rivero&Co. All rights reserved.</div>
 </footer>
