@@ -1,9 +1,75 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rivero&Co Workspace Surabaya</title>
+
+<!-- ✅ PRIMARY SEO -->
+<title>Rivero&Co Workspace Surabaya | Virtual Office, Private Office, Meeting Room & Ballroom</title>
+<meta name="description" content="Rivero&Co Workspace Surabaya — sewa virtual office, private office, meeting room, ballroom, dan coworking space di Surabaya. Lokasi strategis di Jl. Manyar Rejo III/15. Hubungi kami sekarang!">
+<meta name="keywords" content="workspace surabaya, virtual office surabaya, private office surabaya, meeting room surabaya, ballroom surabaya, coworking space surabaya, sewa kantor surabaya, rivero workspace, office space surabaya">
+<meta name="author" content="Rivero&Co Workspace">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://yourusername.github.io/rivero-workspace/">
+
+<!-- ✅ OPEN GRAPH (for WhatsApp, Facebook preview) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Rivero&Co Workspace Surabaya">
+<meta property="og:description" content="Virtual Office, Private Office, Meeting Room & Ballroom di Surabaya. Tempat terbaik untuk produktivitas dan kolaborasi.">
+<meta property="og:url" content="https://yourusername.github.io/rivero-workspace/">
+<meta property="og:image" content="https://cdn.prod.website-files.com/69d086225f0136254549e3a2/69d088e510452792bedbe950_1200x300%20logo%20web.png">
+<meta property="og:locale" content="id_ID">
+<meta property="og:site_name" content="Rivero&Co Workspace">
+
+<!-- ✅ TWITTER CARD -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Rivero&Co Workspace Surabaya">
+<meta name="twitter:description" content="Sewa virtual office, private office, meeting room & ballroom di Surabaya.">
+<meta name="twitter:image" content="https://cdn.prod.website-files.com/69d086225f0136254549e3a2/69d088e510452792bedbe950_1200x300%20logo%20web.png">
+
+<!-- ✅ LOCAL BUSINESS SCHEMA (helps Google Maps & local search) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "Rivero&Co Workspace Surabaya",
+  "description": "Premium workspace provider in Surabaya offering virtual office, private office, meeting room, ballroom and coworking space.",
+  "url": "https://yourusername.github.io/rivero-workspace/",
+  "telephone": "+628212323620",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Jalan Manyar Rejo III / 15",
+    "addressLocality": "Surabaya",
+    "addressRegion": "East Java",
+    "postalCode": "60118",
+    "addressCountry": "ID"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": -7.2856,
+    "longitude": 112.7516
+  },
+  "openingHours": "Mo-Fr 08:00-17:00",
+  "sameAs": [
+    "https://www.instagram.com/rivero.workspace",
+    "https://www.tiktok.com/@rivero.workspace",
+    "https://www.facebook.com/RiveroWorkspaceSurabaya",
+    "https://www.youtube.com/@riveroworkspace"
+  ],
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Workspace Services",
+    "itemListElement": [
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Virtual Office"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Private Office"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Meeting Room"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Ballroom"}},
+      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Coworking Space"}}
+    ]
+  }
+}
+</script>
+
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -651,6 +717,180 @@
     margin-bottom: 32px;
   }
 
+  /* ── GALLERY ── */
+  #gallery { background: var(--black); }
+
+  .gallery-filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+  }
+
+  .filter-btn {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--gray);
+    padding: 10px 22px;
+    border-radius: 100px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--black);
+  }
+
+  .gallery-grid {
+    columns: 3 260px;
+    gap: 14px;
+  }
+
+  .gallery-item {
+    break-inside: avoid;
+    margin-bottom: 14px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .gallery-item img {
+    width: 100%;
+    display: block;
+    transition: transform 0.4s ease;
+    background: #1a1a1a;
+  }
+
+  .gallery-item:hover img { transform: scale(1.04); }
+
+  .gallery-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    display: flex;
+    align-items: flex-end;
+    padding: 16px;
+  }
+
+  .gallery-item:hover .gallery-overlay { opacity: 1; }
+
+  .gallery-overlay-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .gallery-placeholder {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: linear-gradient(135deg, #181818, #222);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--gray);
+    font-size: 12px;
+    text-align: center;
+    padding: 20px;
+    border: 2px dashed rgba(201,168,76,0.2);
+    border-radius: 4px;
+  }
+
+  .gallery-placeholder-icon { font-size: 24px; }
+
+  .gallery-item.hidden { display: none; }
+
+  /* ── LIGHTBOX ── */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .lightbox.open { display: flex; }
+
+  .lightbox-inner {
+    position: relative;
+    max-width: 900px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .lightbox-img {
+    max-width: 100%;
+    max-height: 75vh;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+
+  .lightbox-caption {
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: -44px;
+    right: 0;
+    background: none;
+    border: none;
+    color: var(--cream);
+    font-size: 32px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    line-height: 1;
+  }
+
+  .lightbox-close:hover { opacity: 1; }
+
+  .lightbox-nav {
+    display: flex;
+    gap: 12px;
+  }
+
+  .lightbox-nav button {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--cream);
+    padding: 10px 24px;
+    border-radius: 2px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .lightbox-nav button:hover {
+    background: rgba(201,168,76,0.12);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
   /* ── ANIMATIONS ── */
   .fade-up {
     opacity: 0;
@@ -682,9 +922,10 @@
   <a href="#home" class="nav-logo">Rivero<span>&Co</span></a>
   <ul class="nav-links">
     <li><a href="#home">Home</a></li>
-    <li><a href="#amenities">Amenities</a></li>
-    <li><a href="#location">Location</a></li>
     <li><a href="#venues">Venues</a></li>
+    <li><a href="#amenities">Amenities</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#location">Location</a></li>
     <li><a href="#book" class="nav-cta">Book a Tour</a></li>
   </ul>
   <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -695,9 +936,10 @@
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
   <a href="#home" onclick="closeMenu()">Home</a>
-  <a href="#amenities" onclick="closeMenu()">Amenities</a>
-  <a href="#location" onclick="closeMenu()">Location</a>
   <a href="#venues" onclick="closeMenu()">Venues</a>
+  <a href="#amenities" onclick="closeMenu()">Amenities</a>
+  <a href="#gallery" onclick="closeMenu()">Gallery</a>
+  <a href="#location" onclick="closeMenu()">Location</a>
   <a href="#book" class="cta-mob" onclick="closeMenu()">Book a Tour</a>
 </div>
 
@@ -824,6 +1066,160 @@
   </div>
 </section>
 
+<!-- GALLERY -->
+<section id="gallery">
+  <div class="section-label">Photo Gallery</div>
+  <div class="gold-line"></div>
+  <h2 class="section-title">Our <em>Spaces</em> in Photos</h2>
+  <p class="section-desc">A glimpse into the Rivero&Co experience — real spaces, real atmosphere, ready for your best work.</p>
+
+  <!-- Filter Buttons -->
+  <div class="gallery-filters">
+    <button class="filter-btn active" onclick="filterGallery('all', this)">All Spaces</button>
+    <button class="filter-btn" onclick="filterGallery('workspace', this)">Workspace</button>
+    <button class="filter-btn" onclick="filterGallery('private', this)">Private Office</button>
+    <button class="filter-btn" onclick="filterGallery('meeting', this)">Meeting Room</button>
+    <button class="filter-btn" onclick="filterGallery('ballroom', this)">Ballroom</button>
+    <button class="filter-btn" onclick="filterGallery('virtual', this)">Virtual Office</button>
+  </div>
+
+  <!-- Gallery Grid — Replace src="YOUR_IMAGE_URL" with real photo URLs -->
+  <div class="gallery-grid" id="galleryGrid">
+
+    <!-- WORKSPACE PHOTOS -->
+    <div class="gallery-item" data-cat="workspace" onclick="openLightbox(this)">
+      <div class="gallery-placeholder">
+        <div class="gallery-placeholder-icon">📸</div>
+        <div>Workspace Photo 1</div>
+        <div style="font-size:10px; color: #555; margin-top:4px;">Send your photo → I'll replace this</div>
+      </div>
+      <div class="gallery-overlay"><span class="gallery-overlay-label">Workspace</span></div>
+    </div>
+
+    <div class="gallery-item" data-cat="workspace" onclick="openLightbox(this)">
+      <div class="gallery-placeholder">
+        <div class="gallery-placeholder-icon">📸</div>
+        <div>Workspace Photo 2</div>
+      </div>
+      <div class="gallery-overlay"><span class="gallery-overlay-label">Workspace</span></div>
+    </div>
+
+    <div class="gallery-item" data-cat="workspace" onclick="openLightbox(this)">
+      <div class="gallery-placeholder">
+        <div class="gallery-placeholder-icon">📸</div>
+        <div>Workspace Photo 3</div>
+      </div>
+      <div class="gallery-overlay"><span class="gallery-overlay-label">Workspace</span></div>
+    </div>
+
+    <!-- PRIVATE OFFICE PHOTOS -->
+    <div class="gallery-item" data-cat="private" onclick="openLightbox(this)">
+      <div class="gallery-placeholder">
+        <div class="gallery-placeholder-icon">📸</div>
+        <div>Private Office Photo 1</div>
+      </div>
+      <div class="gallery-overlay"><span class="gallery-overlay-label">Private Office</span></div>
+    </div>
+
+    <div class="gallery-item" data-cat="private" onclick="openLightbox(this)">
+      <div class="gallery-placeholder">
+        <div class="gallery-placeholder-icon">📸</div>
+        <div>Private Office Photo 2</div>
+      </div>
+      <div class="gallery-overlay"><span class="gallery-overlay-label">Private Office</span></div>
+    </div>
+
+    <div class="gallery-item" data-cat="private" onclick="openLightbox(this)">
+      <div class="gallery-placeholder">
+        <div class="gallery-placeholder-icon">📸</div>
+        <div>Private Office Photo 3</div>
+      </div>
+      <div class="gallery-overlay"><span class="gallery-overlay-label">Private Office</span></div>
+    </div>
+
+    <!-- MEETING ROOM PHOTOS -->
+    <div class="gallery-item" data-cat="meeting" onclick="openLightbox(this)">
+      <div class="gallery-placeholder">
+        <div class="gallery-placeholder-icon">📸</div>
+        <div>Meeting Room Photo 1</div>
+      </div>
+      <div class="gallery-overlay"><span class="gallery-overlay-label">Meeting Room</span></div>
+    </div>
+
+    <div class="gallery-item" data-cat="meeting" onclick="openLightbox(this)">
+      <div class="gallery-placeholder">
+        <div class="gallery-placeholder-icon">📸</div>
+        <div>Meeting Room Photo 2</div>
+      </div>
+      <div class="gallery-overlay"><span class="gallery-overlay-label">Meeting Room</span></div>
+    </div>
+
+    <div class="gallery-item" data-cat="meeting" onclick="openLightbox(this)">
+      <div class="gallery-placeholder">
+        <div class="gallery-placeholder-icon">📸</div>
+        <div>Meeting Room Photo 3</div>
+      </div>
+      <div class="gallery-overlay"><span class="gallery-overlay-label">Meeting Room</span></div>
+    </div>
+
+    <!-- BALLROOM PHOTOS -->
+    <div class="gallery-item" data-cat="ballroom" onclick="openLightbox(this)">
+      <div class="gallery-placeholder">
+        <div class="gallery-placeholder-icon">📸</div>
+        <div>Ballroom Photo 1</div>
+      </div>
+      <div class="gallery-overlay"><span class="gallery-overlay-label">Ballroom</span></div>
+    </div>
+
+    <div class="gallery-item" data-cat="ballroom" onclick="openLightbox(this)">
+      <div class="gallery-placeholder">
+        <div class="gallery-placeholder-icon">📸</div>
+        <div>Ballroom Photo 2</div>
+      </div>
+      <div class="gallery-overlay"><span class="gallery-overlay-label">Ballroom</span></div>
+    </div>
+
+    <div class="gallery-item" data-cat="ballroom" onclick="openLightbox(this)">
+      <div class="gallery-placeholder">
+        <div class="gallery-placeholder-icon">📸</div>
+        <div>Ballroom Photo 3</div>
+      </div>
+      <div class="gallery-overlay"><span class="gallery-overlay-label">Ballroom</span></div>
+    </div>
+
+    <!-- VIRTUAL OFFICE PHOTOS -->
+    <div class="gallery-item" data-cat="virtual" onclick="openLightbox(this)">
+      <div class="gallery-placeholder">
+        <div class="gallery-placeholder-icon">📸</div>
+        <div>Virtual Office Photo 1</div>
+      </div>
+      <div class="gallery-overlay"><span class="gallery-overlay-label">Virtual Office</span></div>
+    </div>
+
+    <div class="gallery-item" data-cat="virtual" onclick="openLightbox(this)">
+      <div class="gallery-placeholder">
+        <div class="gallery-placeholder-icon">📸</div>
+        <div>Virtual Office Photo 2</div>
+      </div>
+      <div class="gallery-overlay"><span class="gallery-overlay-label">Virtual Office</span></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightboxOutside(event)">
+  <div class="lightbox-inner">
+    <button class="lightbox-close" onclick="closeLightbox()">×</button>
+    <img class="lightbox-img" id="lightboxImg" src="" alt="">
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+    <div class="lightbox-nav">
+      <button onclick="prevPhoto()">← Prev</button>
+      <button onclick="nextPhoto()">Next →</button>
+    </div>
+  </div>
+</div>
+
 <!-- AMENITIES -->
 <section id="amenities">
   <div class="section-label">What We Offer</div>
@@ -904,11 +1300,8 @@
         Chat on WhatsApp
       </a>
     </div>
-    <div class="map-placeholder">
-      <div style="font-size:40px;">🗺️</div>
-      <div style="color: var(--cream); font-family: 'Cormorant Garamond', serif; font-size: 18px;">Jl. Manyar Rejo III / 15<br>Surabaya</div>
-      <div style="font-size:13px; color: var(--gray);">Embed your Google Maps here<br>in Webflow for live directions</div>
-      <a href="https://maps.google.com/?q=Jalan+Manyar+Rejo+III+15+Surabaya" target="_blank">Open in Google Maps →</a>
+    <div style="border-radius:4px; overflow:hidden; border:1px solid rgba(255,255,255,0.06);">
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3957.518000914856!2d112.767985!3d-7.295547799999986!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7fb402f69064d%3A0x6782308148371901!2sRivero%26Co!5e0!3m2!1sen!2sid!4v1776144095821!5m2!1sen!2sid" width="100%" height="420" style="border:0; display:block;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
     </div>
   </div>
 </section>
@@ -991,6 +1384,72 @@
   }, { threshold: 0.1 });
 
   fadeEls.forEach(el => observer.observe(el));
+
+  // ── GALLERY FILTER ──
+  function filterGallery(cat, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.gallery-item').forEach(item => {
+      if (cat === 'all' || item.dataset.cat === cat) {
+        item.classList.remove('hidden');
+      } else {
+        item.classList.add('hidden');
+      }
+    });
+  }
+
+  // ── LIGHTBOX ──
+  let currentItems = [];
+  let currentIndex = 0;
+
+  function openLightbox(el) {
+    const img = el.querySelector('img');
+    if (!img) return; // still a placeholder, no image yet
+    const label = el.querySelector('.gallery-overlay-label')?.textContent || '';
+    const lb = document.getElementById('lightbox');
+    currentItems = Array.from(document.querySelectorAll('.gallery-item:not(.hidden) img'));
+    currentIndex = currentItems.indexOf(img);
+    document.getElementById('lightboxImg').src = img.src;
+    document.getElementById('lightboxCaption').textContent = label;
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function closeLightboxOutside(e) {
+    if (e.target === document.getElementById('lightbox')) closeLightbox();
+  }
+
+  function prevPhoto() {
+    if (!currentItems.length) return;
+    currentIndex = (currentIndex - 1 + currentItems.length) % currentItems.length;
+    updateLightbox();
+  }
+
+  function nextPhoto() {
+    if (!currentItems.length) return;
+    currentIndex = (currentIndex + 1) % currentItems.length;
+    updateLightbox();
+  }
+
+  function updateLightbox() {
+    const img = currentItems[currentIndex];
+    document.getElementById('lightboxImg').src = img.src;
+    const label = img.closest('.gallery-item')?.querySelector('.gallery-overlay-label')?.textContent || '';
+    document.getElementById('lightboxCaption').textContent = label;
+  }
+
+  document.addEventListener('keydown', (e) => {
+    const lb = document.getElementById('lightbox');
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') prevPhoto();
+    if (e.key === 'ArrowRight') nextPhoto();
+  });
 </script>
 </body>
 </html>
