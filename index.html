@@ -109,13 +109,20 @@
   }
 
   .nav-logo {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(18px, 3vw, 24px);
-    font-weight: 700;
-    color: var(--gold);
-    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
     text-decoration: none;
+    flex-shrink: 0;
   }
+
+  .nav-logo img {
+    height: clamp(44px, 6vw, 56px);
+    width: auto;
+    display: block;
+    transition: opacity 0.2s;
+  }
+
+  .nav-logo img:hover { opacity: 0.85; }
 
   .nav-logo span { color: var(--cream); font-weight: 300; }
 
@@ -907,11 +914,15 @@
   @media (max-width: 768px) {
     .nav-links { display: none; }
     .hamburger { display: flex; }
+    nav { padding: 14px clamp(16px, 4vw, 32px); }
+    .nav-logo img { height: 48px; }
+    .mobile-menu { top: 76px; }
   }
 
   @media (max-width: 480px) {
     .hero-btns { flex-direction: column; align-items: center; }
     .btn-gold, .btn-outline { width: 100%; text-align: center; }
+    .nav-logo img { height: 44px; }
   }
 </style>
 </head>
@@ -920,7 +931,7 @@
 <!-- NAVBAR -->
 <nav>
   <a href="#home" class="nav-logo">
-    <img src="images/rivero-logo.png" alt="Rivero&Co Workspace" style="height:36px; width:auto; display:block;">
+    <img src="images/rivero-logo.png" alt="Rivero&Co Workspace">
   </a>
   <ul class="nav-links">
     <li><a href="#home">Home</a></li>
@@ -1351,7 +1362,7 @@
 
 <!-- FOOTER -->
 <footer>
-  <img src="images/rivero-logo.png" alt="Rivero&Co Workspace" style="height:40px; width:auto; display:block;">
+  <img src="images/rivero-logo.png" alt="Rivero&Co Workspace" style="height: clamp(48px, 8vw, 64px); width:auto; display:block; margin: 0 auto 16px; filter: brightness(1.05);">
   <div class="footer-text">Jl. Manyar Rejo III / 15, Surabaya 60118</div>
   <div class="footer-text">© 2026 Rivero&Co. All rights reserved.</div>
 </footer>
