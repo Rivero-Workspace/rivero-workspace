@@ -61,6 +61,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <!-- Supabase JS SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- SortableJS for drag-and-drop -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 
 <style>
 /* ════════════════════════════════════════
@@ -864,6 +866,7 @@ footer#site-footer {
 
 @keyframes ping { 0%,100%{opacity:1}50%{opacity:0.5} }
 @keyframes slideIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 /* Additional polish */
 .auth-btn:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -879,6 +882,7 @@ footer#site-footer {
 .admin-section-title { font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold); margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid rgba(201,168,76,0.15); display:flex; align-items:center; gap:8px; }
 .admin-upload-zone { border:2px dashed rgba(201,168,76,0.3); border-radius:8px; padding:32px; text-align:center; cursor:pointer; transition:all 0.2s; position:relative; }
 .admin-upload-zone:hover { border-color:var(--gold); background:rgba(201,168,76,0.04); }
+.admin-upload-zone.drag-over { border-color:var(--gold); background:rgba(201,168,76,0.12); transform:scale(1.01); box-shadow:0 0 0 4px rgba(201,168,76,0.15); }
 .admin-upload-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; }
 .admin-upload-label { font-size:12px; color:var(--gray); margin-top:8px; }
 .admin-img-preview-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:12px; margin-top:16px; }
@@ -893,7 +897,160 @@ footer#site-footer {
 .admin-save-btn:hover { background:var(--gold-light); }
 .calendar-embed-container { border-radius:8px; overflow:hidden; border:1px solid rgba(201,168,76,0.15); margin-top:12px; }
 
-</style>
+/* ════════════════════════════════════════
+   ADMIN — QUIET LUXURY MARBLE AESTHETIC
+════════════════════════════════════════ */
+#db-page-admin {
+  --ql-cream: #F7F1E3;
+  --ql-charcoal: #1a1917;
+  --ql-gold: #c9a84c;
+  --ql-border: rgba(201,168,76,0.18);
+}
+
+/* Marble SVG texture injected via pseudo-elements */
+#db-page-admin .ql-marble-card {
+  position: relative;
+  background: #181614;
+  border: 1px solid rgba(201,168,76,0.18);
+  border-radius: 12px;
+  padding: 28px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+#db-page-admin .ql-marble-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 120% 80% at 10% -10%, rgba(247,241,227,0.055) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 60% at 90% 110%, rgba(201,168,76,0.04) 0%, transparent 55%),
+    repeating-linear-gradient(-62deg, transparent 0px, transparent 18px, rgba(247,241,227,0.008) 18px, rgba(247,241,227,0.008) 19px),
+    repeating-linear-gradient(28deg, transparent 0px, transparent 32px, rgba(201,168,76,0.006) 32px, rgba(201,168,76,0.006) 33px);
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 12px;
+}
+#db-page-admin .ql-marble-card > * { position: relative; z-index: 1; }
+
+/* Section drag handle */
+.ql-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(201,168,76,0.15);
+  user-select: none;
+}
+.ql-drag-handle {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  cursor: grab;
+  padding: 4px 6px;
+  border-radius: 4px;
+  opacity: 0.45;
+  transition: opacity 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+.ql-drag-handle:hover { opacity: 1; background: rgba(201,168,76,0.1); }
+.ql-drag-handle:active { cursor: grabbing; }
+.ql-drag-handle span {
+  display: block;
+  width: 14px;
+  height: 2px;
+  background: var(--gold);
+  border-radius: 1px;
+}
+.ql-section-icon { font-size: 18px; flex-shrink: 0; }
+.ql-section-label {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 700;
+  flex: 1;
+  font-family: 'DM Sans', sans-serif;
+}
+.ql-section-badge {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gray);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 3px 8px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+/* Sortable ghost & chosen */
+.sortable-ghost { opacity: 0.35; background: rgba(201,168,76,0.06) !important; border: 1px dashed var(--gold) !important; }
+.sortable-chosen { box-shadow: 0 16px 48px rgba(0,0,0,0.5) !important; transform: rotate(0.5deg) scale(1.01) !important; z-index: 100 !important; }
+.sortable-drag { opacity: 1 !important; }
+
+/* Calendar event list in admin */
+.cal-event-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.cal-event-item:last-child { border-bottom: none; }
+.cal-event-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gold);
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.cal-event-title { font-size: 13px; color: var(--cream); font-weight: 500; line-height: 1.3; }
+.cal-event-time { font-size: 11px; color: var(--gray); margin-top: 2px; letter-spacing: 0.05em; }
+
+/* Gallery upload drop zone enhanced */
+.admin-drop-active { border-color: var(--gold) !important; background: rgba(201,168,76,0.1) !important; }
+
+/* Section reorder status bar */
+.ql-reorder-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba(201,168,76,0.07);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 12px;
+  color: var(--gold);
+}
+.ql-reorder-bar button {
+  background: var(--gold);
+  color: var(--black);
+  border: none;
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Quiet luxury form inputs inside admin */
+#db-page-admin .admin-text-input,
+#db-page-admin .admin-text-area {
+  background: rgba(247,241,227,0.04);
+  border-color: rgba(201,168,76,0.2);
+}
+#db-page-admin .admin-text-input:focus,
+#db-page-admin .admin-text-area:focus {
+  background: rgba(247,241,227,0.07);
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.08);
+}</style>
 </head>
 <body>
 
@@ -1264,10 +1421,10 @@ footer#site-footer {
         <div class="contact-card-val">hello@rivero.co</div>
       </a>
       <!-- Google Maps -->
-      <a href="https://www.google.com/maps/dir/?api=1&destination=Rivero%26Co&destination_place_id=0x2dd7fb402f69064d:0x6782308148371901" class="contact-card cc-maps" target="_blank">
+      <a href="https://maps.app.goo.gl/eodwuZw9HC45VQSw8" class="contact-card cc-maps" target="_blank" rel="noopener">
         <div class="cc-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
-        <div class="contact-card-label">Google Maps</div>
-        <div class="contact-card-val">Lihat Lokasi</div>
+        <div class="contact-card-label">Navigasi Langsung</div>
+        <div class="contact-card-val">Buka Rute ↗</div>
       </a>
     </div>
 
@@ -1816,88 +1973,190 @@ footer#site-footer {
 
     <!-- ADMIN PANEL PAGE -->
     <div class="db-page" id="db-page-admin">
-      <!-- Home Editor -->
-      <div class="admin-section">
-        <div class="admin-section-title">🏠 Edit Halaman Home</div>
-        <div style="margin-bottom:16px;">
-          <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Hero Badge Text</label>
-          <input type="text" class="admin-text-input" id="admin-hero-badge" placeholder="Surabaya's Premier Workspace · April 2026">
-        </div>
-        <div style="margin-bottom:16px;">
-          <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Judul Utama (Hero Title)</label>
-          <input type="text" class="admin-text-input" id="admin-hero-title" placeholder="Rise With Purpose">
-        </div>
-        <div style="margin-bottom:16px;">
-          <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Subtitle Hero</label>
-          <input type="text" class="admin-text-input" id="admin-hero-subtitle" placeholder="A Workspace That Elevates Your Vision">
-        </div>
-        <div style="margin-bottom:16px;">
-          <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Deskripsi Hero</label>
-          <textarea class="admin-text-area" id="admin-hero-desc" placeholder="Deskripsi halaman home..."></textarea>
-        </div>
-        <div style="margin-bottom:16px;">
-          <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Event Banner — Judul</label>
-          <input type="text" class="admin-text-input" id="admin-event-title" placeholder="Judul event...">
-        </div>
-        <div style="margin-bottom:16px;">
-          <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Event Banner — Deskripsi</label>
-          <textarea class="admin-text-area" id="admin-event-desc" placeholder="Deskripsi event..."></textarea>
-        </div>
-        <div style="margin-bottom:16px;">
-          <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Event Banner — Link URL</label>
-          <input type="text" class="admin-text-input" id="admin-event-link" placeholder="https://...">
-        </div>
-        <button class="admin-save-btn" onclick="adminSaveHome()">💾 Simpan Perubahan Home</button>
+
+      <!-- Drag & Drop Reorder Bar -->
+      <div class="ql-reorder-bar" id="ql-reorder-bar" style="display:none;">
+        <span>⠿ Urutan seksi telah diubah</span>
+        <button onclick="adminSaveSectionOrder()">💾 Simpan Urutan</button>
       </div>
 
-      <!-- Venue Images -->
-      <div class="admin-section">
-        <div class="admin-section-title">🖼️ Upload Foto Venue</div>
-        <div style="margin-bottom:16px;">
-          <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Kategori Venue</label>
-          <select class="admin-text-input" id="admin-venue-cat" style="margin-bottom:0;">
-            <option value="workspace">Workspace</option>
-            <option value="private">Private Office</option>
-            <option value="meeting">Meeting Room</option>
-            <option value="ballroom">Ballroom</option>
-            <option value="virtual">Virtual Office</option>
-          </select>
-        </div>
-        <div style="margin-bottom:12px;">
-          <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Label / Caption Foto</label>
-          <input type="text" class="admin-text-input" id="admin-venue-label" placeholder="Contoh: Meeting Room A — Setup Presentasi">
-        </div>
-        <div class="admin-upload-zone" id="adminUploadZone">
-          <input type="file" id="admin-venue-file" accept="image/*" multiple onchange="adminHandleVenueUpload(this)">
-          <div style="font-size:32px;margin-bottom:8px;">📷</div>
-          <div style="font-size:13px;color:var(--cream);font-weight:500;">Klik atau drag foto di sini</div>
-          <div class="admin-upload-label">JPG, PNG, WEBP · Bisa multiple foto sekaligus</div>
-        </div>
-        <div class="admin-img-preview-grid" id="admin-venue-preview"></div>
-      </div>
+      <!-- Sortable Section Container -->
+      <div id="admin-sections-sortable">
 
-      <!-- Venue Card Editor -->
-      <div class="admin-section">
-        <div class="admin-section-title">✏️ Edit Teks Venue Cards</div>
-        <div id="admin-venue-cards-editor"></div>
-        <button class="admin-save-btn" onclick="adminSaveVenueCards()">💾 Simpan Venue Cards</button>
-      </div>
-
-      <!-- Calendar Info -->
-      <div class="admin-section">
-        <div class="admin-section-title">📅 Sync Jadwal Booking</div>
-        <p style="font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6;">Jadwal booking di website otomatis tampil dari Google Calendar <strong style="color:var(--cream);">workspacerivero@gmail.com</strong>. Cukup tambah event di Google Calendar kamu, website langsung update!</p>
-        <div style="background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.2);border-radius:6px;padding:16px;">
-          <div style="font-size:11px;color:var(--gold);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;">Cara Pakai:</div>
-          <ol style="font-size:13px;color:var(--gray);line-height:2;padding-left:20px;">
-            <li>Buka Google Calendar dengan akun <strong style="color:var(--cream);">workspacerivero@gmail.com</strong></li>
-            <li>Tambah event baru: nama ruangan + nama klien</li>
-            <li>Set waktu mulai &amp; selesai</li>
-            <li>Kalender di website otomatis tampil dalam beberapa menit ✅</li>
-          </ol>
+        <!-- ── SECTION: HOME EDITOR ── -->
+        <div class="ql-marble-card" data-section-id="home-editor">
+          <div class="ql-section-header">
+            <div class="ql-drag-handle" title="Drag untuk susun ulang"><span></span><span></span><span></span></div>
+            <span class="ql-section-icon">🏠</span>
+            <span class="ql-section-label">Edit Halaman Home</span>
+            <span class="ql-section-badge">Content Editor</span>
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Hero Badge Text</label>
+            <input type="text" class="admin-text-input" id="admin-hero-badge" placeholder="Surabaya's Premier Workspace · April 2026">
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Judul Utama (Hero Title)</label>
+            <input type="text" class="admin-text-input" id="admin-hero-title" placeholder="Rise With Purpose">
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Subtitle Hero</label>
+            <input type="text" class="admin-text-input" id="admin-hero-subtitle" placeholder="A Workspace That Elevates Your Vision">
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Deskripsi Hero</label>
+            <textarea class="admin-text-area" id="admin-hero-desc" placeholder="Deskripsi halaman home..."></textarea>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div>
+              <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Event Banner — Judul</label>
+              <input type="text" class="admin-text-input" id="admin-event-title" placeholder="Judul event..." style="margin-bottom:0;">
+            </div>
+            <div>
+              <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Event Banner — Link URL</label>
+              <input type="text" class="admin-text-input" id="admin-event-link" placeholder="https://..." style="margin-bottom:0;">
+            </div>
+          </div>
+          <div style="margin-bottom:20px;">
+            <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Event Banner — Deskripsi</label>
+            <textarea class="admin-text-area" id="admin-event-desc" placeholder="Deskripsi event..."></textarea>
+          </div>
+          <button class="admin-save-btn" onclick="adminSaveHome()">💾 Simpan Perubahan Home</button>
         </div>
-        <a href="https://calendar.google.com" target="_blank" class="admin-save-btn" style="display:inline-block;margin-top:16px;text-decoration:none;">🗓️ Buka Google Calendar</a>
-      </div>
+
+        <!-- ── SECTION: PHOTO GALLERY UPLOAD ── -->
+        <div class="ql-marble-card" data-section-id="photo-upload">
+          <div class="ql-section-header">
+            <div class="ql-drag-handle" title="Drag untuk susun ulang"><span></span><span></span><span></span></div>
+            <span class="ql-section-icon">🖼️</span>
+            <span class="ql-section-label">Upload Foto Venue</span>
+            <span class="ql-section-badge">Gallery Manager</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div>
+              <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Kategori Venue</label>
+              <select class="admin-text-input" id="admin-venue-cat" style="margin-bottom:0;">
+                <option value="workspace">Workspace</option>
+                <option value="private">Private Office</option>
+                <option value="meeting">Meeting Room</option>
+                <option value="ballroom">Ballroom</option>
+                <option value="virtual">Virtual Office</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Label / Caption Foto</label>
+              <input type="text" class="admin-text-input" id="admin-venue-label" placeholder="Contoh: Meeting Room A" style="margin-bottom:0;">
+            </div>
+          </div>
+          <!-- Drag & Drop Upload Zone -->
+          <div class="admin-upload-zone" id="adminUploadZone">
+            <input type="file" id="admin-venue-file" accept="image/*" multiple onchange="adminHandleVenueUpload(this)">
+            <div style="font-size:32px;margin-bottom:10px;pointer-events:none;">📷</div>
+            <div style="font-size:13px;color:var(--cream);font-weight:500;pointer-events:none;">Drag & drop foto di sini, atau klik untuk pilih</div>
+            <div class="admin-upload-label" style="pointer-events:none;">JPG · PNG · WEBP · Multiple files supported</div>
+            <div style="margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;pointer-events:none;">
+              <div style="width:32px;height:1px;background:rgba(201,168,76,0.3);"></div>
+              <span style="font-size:10px;color:var(--gray);letter-spacing:0.15em;">DROP ZONE ACTIVE</span>
+              <div style="width:32px;height:1px;background:rgba(201,168,76,0.3);"></div>
+            </div>
+          </div>
+          <div class="admin-img-preview-grid" id="admin-venue-preview"></div>
+        </div>
+
+        <!-- ── SECTION: VENUE CARD TEXT EDITOR ── -->
+        <div class="ql-marble-card" data-section-id="venue-cards">
+          <div class="ql-section-header">
+            <div class="ql-drag-handle" title="Drag untuk susun ulang"><span></span><span></span><span></span></div>
+            <span class="ql-section-icon">✏️</span>
+            <span class="ql-section-label">Edit Teks Venue Cards</span>
+            <span class="ql-section-badge">CMS</span>
+          </div>
+          <div id="admin-venue-cards-editor"></div>
+          <button class="admin-save-btn" onclick="adminSaveVenueCards()">💾 Simpan Venue Cards</button>
+        </div>
+
+        <!-- ── SECTION: GOOGLE CALENDAR LIVE SYNC ── -->
+        <div class="ql-marble-card" data-section-id="calendar-sync">
+          <div class="ql-section-header">
+            <div class="ql-drag-handle" title="Drag untuk susun ulang"><span></span><span></span><span></span></div>
+            <span class="ql-section-icon">📅</span>
+            <span class="ql-section-label">Google Calendar — Live Sync</span>
+            <span class="ql-section-badge" style="background:rgba(34,197,94,0.1);color:#4ade80;border-color:rgba(34,197,94,0.2);">🟢 Real-Time</span>
+          </div>
+
+          <!-- Status Bar -->
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:12px 16px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.15);border-radius:6px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 3px rgba(74,222,128,0.2);animation:ping 1.5s infinite;flex-shrink:0;"></div>
+            <div style="flex:1;">
+              <div style="font-size:12px;color:#4ade80;font-weight:600;letter-spacing:0.06em;">Tersinkron dengan <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(74,222,128,0.1);padding:1px 6px;border-radius:3px;">workspacerivero@gmail.com</code></div>
+              <div style="font-size:11px;color:var(--gray);margin-top:2px;">Tambah event di Google Calendar → website langsung update otomatis</div>
+            </div>
+            <button onclick="adminRefreshCalendar()" style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);color:#4ade80;padding:6px 14px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.06em;white-space:nowrap;">↻ Refresh</button>
+          </div>
+
+          <!-- Upcoming Events List -->
+          <div style="margin-bottom:20px;">
+            <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--gray);margin-bottom:12px;">Event Mendatang</div>
+            <div id="admin-cal-events-list" style="min-height:60px;">
+              <div style="display:flex;align-items:center;gap:8px;padding:12px 0;color:var(--gray);font-size:13px;" id="admin-cal-loading">
+                <div style="width:14px;height:14px;border:2px solid rgba(201,168,76,0.3);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+                Memuat jadwal dari Google Calendar...
+              </div>
+            </div>
+          </div>
+
+          <!-- How-To Instructions -->
+          <div style="background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.12);border-radius:6px;padding:16px;margin-bottom:16px;">
+            <div style="font-size:10px;color:var(--gold);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:10px;font-weight:700;">Cara Kelola Jadwal</div>
+            <ol style="font-size:12px;color:rgba(245,240,232,0.7);line-height:2.2;padding-left:20px;margin:0;">
+              <li>Login ke Google Calendar dengan <strong style="color:var(--cream);">workspacerivero@gmail.com</strong></li>
+              <li>Buat event baru: <em style="color:var(--gold);">Nama Ruangan — Nama Klien</em></li>
+              <li>Set tanggal, jam mulai, dan jam selesai</li>
+              <li>Pastikan kalender diset <strong style="color:var(--cream);">Public</strong> agar embed bisa tampil</li>
+              <li>Website public otomatis update dalam beberapa menit ✅</li>
+            </ol>
+          </div>
+
+          <!-- Security Note -->
+          <div style="background:rgba(96,165,250,0.05);border:1px solid rgba(96,165,250,0.15);border-radius:6px;padding:12px 16px;margin-bottom:16px;display:flex;gap:10px;">
+            <span style="font-size:16px;flex-shrink:0;">🔒</span>
+            <div style="font-size:11px;color:rgba(245,240,232,0.6);line-height:1.8;">
+              <strong style="color:#93c5fd;">Keamanan:</strong> Kalender publik Rivero diakses via embed resmi Google (iFrame). Tidak ada API key atau backend yang terekspos. Data booking sensitif tetap aman di Supabase.
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <a href="https://calendar.google.com" target="_blank" class="admin-save-btn" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;">🗓️ Buka Google Calendar</a>
+            <button onclick="adminCopyCalEmbed()" style="background:transparent;border:1px solid rgba(201,168,76,0.3);color:var(--gold);padding:12px 20px;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">⧉ Copy Embed Code</button>
+          </div>
+        </div>
+
+        <!-- ── SECTION: SUPABASE SECTION REORDER ── -->
+        <div class="ql-marble-card" data-section-id="site-settings">
+          <div class="ql-section-header">
+            <div class="ql-drag-handle" title="Drag untuk susun ulang"><span></span><span></span><span></span></div>
+            <span class="ql-section-icon">⚙️</span>
+            <span class="ql-section-label">Site Settings & Database</span>
+            <span class="ql-section-badge">Supabase</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:16px;text-align:center;">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gold);" id="admin-stat-members">—</div>
+              <div style="font-size:10px;color:var(--gray);letter-spacing:0.12em;text-transform:uppercase;margin-top:4px;">Members</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:16px;text-align:center;">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#4ade80;" id="admin-stat-bookings">—</div>
+              <div style="font-size:10px;color:var(--gray);letter-spacing:0.12em;text-transform:uppercase;margin-top:4px;">Bookings</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:16px;text-align:center;">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:28px;color:#60a5fa;" id="admin-stat-photos">—</div>
+              <div style="font-size:10px;color:var(--gray);letter-spacing:0.12em;text-transform:uppercase;margin-top:4px;">Foto Venue</div>
+            </div>
+          </div>
+          <button onclick="adminLoadStats()" class="admin-save-btn" style="background:transparent;border:1px solid rgba(201,168,76,0.3);color:var(--gold);">📊 Load Stats dari Supabase</button>
+        </div>
+
+      </div><!-- end admin-sections-sortable -->
     </div>
 
   </div><!-- end db-content-area -->
@@ -2061,8 +2320,8 @@ document.addEventListener('keydown', (e) => {
    ⚠️  ISI kedua nilai ini setelah buat project di supabase.com
    Lihat: Settings → API → Project URL & anon public key
 ═══════════════════════════════════════════════════════════ */
-const SUPABASE_URL  = 'GANTI_DENGAN_PROJECT_URL_KAMU';   // contoh: https://xxxx.supabase.co
-const SUPABASE_ANON = 'GANTI_DENGAN_ANON_KEY_KAMU';      // contoh: eyJhbGci...
+const SUPABASE_URL  = 'https://uemfiuwrxgyajjqcfdwr.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVlbWZpdXdyeGd5YWpqcWNmZHdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MjgzOTQsImV4cCI6MjA5MjUwNDM5NH0.w7alEsnpGo6xpee_QLspupGpdRgyWCMxo17SP6zrXMU';
 
 // Cek apakah Supabase sudah dikonfigurasi dengan benar
 const _supaConfigured = SUPABASE_URL.startsWith('https://') && SUPABASE_ANON.length > 20;
@@ -2942,7 +3201,7 @@ function initCHCharts(t) {
 })();
 
 /* ══════════════════════════════════════════════════════════
-   ADMIN PANEL — JavaScript
+   ADMIN PANEL — JavaScript (Enhanced: D&D, Calendar, Supabase)
 ══════════════════════════════════════════════════════════ */
 
 /* Venue card data defaults */
@@ -2954,12 +3213,234 @@ const DEFAULT_VENUE_CARDS = [
   { tag:'Workspace', name:'Coworking Space', desc:'A vibrant, open coworking environment designed for productivity and community. Flexible daily, weekly, or monthly plans available.', icon:'💼' },
 ];
 
+/* ─── SORTABLEJS — Section Drag & Drop ─── */
+let _adminSortable = null;
+
+function adminInitSortable() {
+  const container = document.getElementById('admin-sections-sortable');
+  if (!container || typeof Sortable === 'undefined') return;
+
+  _adminSortable = Sortable.create(container, {
+    animation: 200,
+    easing: 'cubic-bezier(0.22,1,0.36,1)',
+    handle: '.ql-drag-handle',
+    ghostClass: 'sortable-ghost',
+    chosenClass: 'sortable-chosen',
+    dragClass: 'sortable-drag',
+    onStart() {
+      document.body.style.cursor = 'grabbing';
+    },
+    onEnd(evt) {
+      document.body.style.cursor = '';
+      if (evt.oldIndex !== evt.newIndex) {
+        document.getElementById('ql-reorder-bar').style.display = 'flex';
+      }
+    }
+  });
+
+  // Load saved order
+  const saved = JSON.parse(localStorage.getItem('rivero_admin_section_order') || '[]');
+  if (saved.length) {
+    saved.forEach(id => {
+      const el = container.querySelector(`[data-section-id="${id}"]`);
+      if (el) container.appendChild(el);
+    });
+  }
+}
+
+function adminSaveSectionOrder() {
+  const container = document.getElementById('admin-sections-sortable');
+  if (!container) return;
+  const order = [...container.querySelectorAll('[data-section-id]')].map(el => el.dataset.sectionId);
+  localStorage.setItem('rivero_admin_section_order', JSON.stringify(order));
+
+  // Sync to Supabase site_settings if connected
+  if (_supaConfigured && currentUser?.role === 'admin') {
+    _supa.from('site_settings').upsert({
+      key: 'admin_section_order',
+      value: JSON.stringify(order),
+      updated_at: new Date().toISOString(),
+      updated_by: currentUser.email
+    }, { onConflict: 'key' }).then(({ error }) => {
+      if (!error) adminToast('✅ Urutan seksi disimpan ke Supabase!');
+      else adminToast('💾 Disimpan lokal. Supabase: ' + error.message);
+    });
+  } else {
+    adminToast('💾 Urutan seksi disimpan!');
+  }
+  document.getElementById('ql-reorder-bar').style.display = 'none';
+}
+
+/* ─── DRAG & DROP UPLOAD ZONE ─── */
+function adminInitUploadZone() {
+  const zone = document.getElementById('adminUploadZone');
+  if (!zone) return;
+
+  ['dragenter','dragover'].forEach(ev => {
+    zone.addEventListener(ev, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      zone.classList.add('drag-over');
+    });
+  });
+
+  ['dragleave','dragend'].forEach(ev => {
+    zone.addEventListener(ev, (e) => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+    });
+  });
+
+  zone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    zone.classList.remove('drag-over');
+    const files = e.dataTransfer?.files;
+    if (files && files.length) {
+      // Inject into the file input and trigger handler
+      const input = document.getElementById('admin-venue-file');
+      // Create a new DataTransfer to assign files
+      const dt = new DataTransfer();
+      [...files].forEach(f => { if (f.type.startsWith('image/')) dt.items.add(f); });
+      input.files = dt.files;
+      if (dt.files.length) adminHandleVenueUpload(input);
+    }
+  });
+}
+
+/* ─── GOOGLE CALENDAR — Live Event Fetch ─── */
+const CAL_EMBED_SRC = `https://calendar.google.com/calendar/embed?src=workspacerivero%40gmail.com&ctz=Asia%2FJakarta&showTitle=0&showNav=1&showDate=1&showPrint=0&showTabs=0&showCalendars=0&showTz=0&mode=WEEK&bgcolor=%230a0a0a&color=%23c9a84c`;
+
+/* Fetch public calendar events via Google Calendar API embed feed.
+   Method: public iCal feed via a CORS proxy (allorigins.win — free, open).
+   No API key needed because the calendar is set to PUBLIC.
+   Security: read-only, no sensitive data, same as what the iframe shows. */
+async function adminFetchCalendarEvents() {
+  const listEl = document.getElementById('admin-cal-events-list');
+  if (!listEl) return;
+
+  listEl.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px 0;color:var(--gray);font-size:13px;"><div style="width:14px;height:14px;border:2px solid rgba(201,168,76,0.3);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;"></div>Memuat jadwal...</div>`;
+
+  try {
+    // Public iCal URL for this calendar
+    const icalUrl = `https://calendar.google.com/calendar/ical/workspacerivero%40gmail.com/public/basic.ics`;
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(icalUrl)}`;
+
+    const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) throw new Error('Network error ' + res.status);
+
+    const json = await res.json();
+    const ical = json.contents;
+    const events = parseIcal(ical);
+
+    if (!events.length) {
+      listEl.innerHTML = `<div style="font-size:13px;color:var(--gray);padding:12px 0;">Belum ada event mendatang di kalender.</div>`;
+      return;
+    }
+
+    listEl.innerHTML = events.slice(0, 8).map(ev => `
+      <div class="cal-event-item">
+        <div class="cal-event-dot" style="background:${ev.passed ? 'var(--gray)' : 'var(--gold)'};"></div>
+        <div>
+          <div class="cal-event-title">${escHtml(ev.summary)}</div>
+          <div class="cal-event-time">${ev.dateStr}${ev.timeStr ? ' · ' + ev.timeStr : ''}</div>
+        </div>
+        <span class="badge ${ev.passed ? 'badge-gold' : 'badge-green'}" style="margin-left:auto;white-space:nowrap;font-size:9px;">${ev.passed ? 'Selesai' : 'Mendatang'}</span>
+      </div>
+    `).join('');
+
+  } catch (err) {
+    // Fallback: show a static instructional message — calendar might be private
+    listEl.innerHTML = `
+      <div style="padding:12px;background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.15);border-radius:6px;">
+        <div style="font-size:12px;color:var(--gold);margin-bottom:6px;font-weight:600;">Tidak dapat memuat event otomatis</div>
+        <div style="font-size:11px;color:var(--gray);line-height:1.8;">Pastikan kalender <code style="background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;">workspacerivero@gmail.com</code> diset <strong style="color:var(--cream);">Public</strong> di Google Calendar Settings → Share with specific people → Make available to public.</div>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:var(--gray);">Iframe kalender publik di halaman booking tetap berfungsi normal.</div>
+    `;
+  }
+}
+
+function adminRefreshCalendar() {
+  adminFetchCalendarEvents();
+  adminToast('🔄 Memuat ulang jadwal kalender...');
+}
+
+/* Minimal iCal parser — extracts VEVENT blocks */
+function parseIcal(raw) {
+  if (!raw) return [];
+  const events = [];
+  const blocks = raw.split('BEGIN:VEVENT');
+  const now = new Date();
+
+  blocks.slice(1).forEach(block => {
+    const summary = (block.match(/^SUMMARY[^:]*:(.+)$/m) || [])[1]?.trim().replace(/\\,/g, ',').replace(/\\n/g, ' ') || 'Event';
+    const dtstart = (block.match(/^DTSTART[^:]*:(\d+)/m) || [])[1] || '';
+    const dtend   = (block.match(/^DTEND[^:]*:(\d+)/m) || [])[1] || '';
+
+    if (!dtstart) return;
+
+    let dateStr = '', timeStr = '', passed = false;
+    try {
+      const y = dtstart.slice(0,4), mo = dtstart.slice(4,6), d = dtstart.slice(6,8);
+      const hasTime = dtstart.length >= 13;
+      const dt = new Date(hasTime
+        ? `${y}-${mo}-${d}T${dtstart.slice(9,11)}:${dtstart.slice(11,13)}:00`
+        : `${y}-${mo}-${d}`
+      );
+      const opts = { weekday:'short', day:'numeric', month:'short', year:'numeric' };
+      dateStr = dt.toLocaleDateString('id-ID', opts);
+      if (hasTime) {
+        const endDt = dtend.length >= 13
+          ? new Date(`${dtend.slice(0,4)}-${dtend.slice(4,6)}-${dtend.slice(6,8)}T${dtend.slice(9,11)}:${dtend.slice(11,13)}:00`)
+          : null;
+        timeStr = dt.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) +
+          (endDt ? ' – ' + endDt.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) : '');
+      }
+      passed = dt < now;
+      events.push({ summary, dateStr, timeStr, passed, _dt: dt });
+    } catch(e) {}
+  });
+
+  return events.sort((a,b) => a._dt - b._dt);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function adminCopyCalEmbed() {
+  const code = `<iframe src="${CAL_EMBED_SRC}" style="border:0;display:block;width:100%;height:500px;" frameborder="0" scrolling="no"></iframe>`;
+  navigator.clipboard.writeText(code).then(() => adminToast('✅ Embed code dicopy!')).catch(() => adminToast('Copy manual dari console.'));
+}
+
+/* ─── ADMIN STATS from Supabase ─── */
+async function adminLoadStats() {
+  if (!_supaConfigured) { adminToast('⚠️ Supabase belum terhubung.'); return; }
+  try {
+    const [membersRes, bookingsRes] = await Promise.all([
+      _supa.from('profiles').select('id', { count: 'exact', head: true }),
+      _supa.from('bookings').select('id', { count: 'exact', head: true }),
+    ]);
+    const photos = Object.values(JSON.parse(localStorage.getItem('rivero_venue_images') || '{}')).flat().length;
+    if (document.getElementById('admin-stat-members')) document.getElementById('admin-stat-members').textContent = membersRes.count ?? '—';
+    if (document.getElementById('admin-stat-bookings')) document.getElementById('admin-stat-bookings').textContent = bookingsRes.count ?? '—';
+    if (document.getElementById('admin-stat-photos')) document.getElementById('admin-stat-photos').textContent = photos;
+    adminToast('✅ Stats berhasil dimuat!');
+  } catch(e) {
+    adminToast('❌ Gagal load stats: ' + e.message);
+  }
+}
+
 /* Load & apply all saved admin data */
 function adminLoadAll() {
   adminApplyHome();
   adminApplyVenueImages();
   adminBuildVenueCardEditor();
   adminApplyVenueCards();
+  adminInitSortable();
+  adminInitUploadZone();
+  setTimeout(adminFetchCalendarEvents, 400);
 }
 
 /* ── HOME EDITOR ── */
@@ -2998,6 +3479,16 @@ function adminSaveHome() {
   };
   localStorage.setItem('rivero_admin_home', JSON.stringify(data));
   adminApplyHome();
+
+  // Persist to Supabase site_settings
+  if (_supaConfigured && currentUser?.role === 'admin') {
+    _supa.from('site_settings').upsert({
+      key: 'hero_content',
+      value: JSON.stringify(data),
+      updated_at: new Date().toISOString(),
+      updated_by: currentUser.email
+    }, { onConflict: 'key' });
+  }
   adminToast('✅ Perubahan Home disimpan!');
 }
 
@@ -3099,7 +3590,7 @@ function adminBuildVenueCardEditor() {
   const container = document.getElementById('admin-venue-cards-editor');
   if (!container) return;
   container.innerHTML = data.map((v, i) => `
-    <div style="border:1px solid rgba(201,168,76,0.1);border-radius:6px;padding:16px;margin-bottom:12px;">
+    <div style="border:1px solid rgba(201,168,76,0.1);border-radius:6px;padding:16px;margin-bottom:12px;background:rgba(247,241,227,0.02);">
       <div style="font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;">${v.icon} ${v.tag}</div>
       <input type="text" class="admin-text-input" id="vc-name-${i}" value="${v.name}" placeholder="Nama venue">
       <textarea class="admin-text-area" id="vc-desc-${i}" placeholder="Deskripsi...">${v.desc}</textarea>
@@ -3118,6 +3609,16 @@ function adminSaveVenueCards() {
   });
   localStorage.setItem('rivero_admin_venue_cards', JSON.stringify(data));
   adminApplyVenueCards();
+
+  // Sync to Supabase
+  if (_supaConfigured && currentUser?.role === 'admin') {
+    _supa.from('site_settings').upsert({
+      key: 'venue_cards',
+      value: JSON.stringify(data),
+      updated_at: new Date().toISOString(),
+      updated_by: currentUser.email
+    }, { onConflict: 'key' });
+  }
   adminToast('✅ Venue cards disimpan!');
 }
 
@@ -3138,7 +3639,7 @@ function adminApplyVenueCards() {
 function adminToast(msg) {
   const toast = document.createElement('div');
   toast.textContent = msg;
-  toast.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:var(--charcoal);border:1px solid rgba(201,168,76,0.4);color:var(--cream);padding:12px 24px;border-radius:6px;font-size:13px;z-index:9999;animation:slideIn 0.3s ease;box-shadow:0 8px 24px rgba(0,0,0,0.4);';
+  toast.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:var(--charcoal);border:1px solid rgba(201,168,76,0.4);color:var(--cream);padding:12px 24px;border-radius:6px;font-size:13px;z-index:9999;animation:slideIn 0.3s ease;box-shadow:0 8px 24px rgba(0,0,0,0.4);white-space:nowrap;';
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 2800);
 }
