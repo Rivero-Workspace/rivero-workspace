@@ -3,9 +3,9 @@
   "hero_title": "Junevolve - Evolve Your Dreams",
   "hero_subtitle": "",
   "hero_desc": "",
-  "event_title": "",
-  "event_desc": "",
-  "event_link": "",
+  "event_title": "Delifru Expert Class",
+  "event_desc": "An immersive masterclass exploring the connection between flavor, creativity, and brand identity. Led by industry professionals, participants will learn beverage innovation, coffee craftsmanship, latte art techniques, and content creation strategies while developing signature drinks that stand out in today's competitive F&B industry.",
+  "event_link": "https://docs.google.com/forms/d/e/1FAIpQLSd-omwSTPKpYcSfwxO4lCLFEsYYYpgX3kpxATmIt4c6AxJ2mQ/viewform",
   "venue_cards": [
     {
       "tag": "Virtual Office",
@@ -38,5 +38,5 @@
       "icon": "💼"
     }
   ],
-  "updated_at": "2026-06-04T09:23:54.220Z"
+  "updated_at": "2026-06-04T09:39:59.370Z"
 }
