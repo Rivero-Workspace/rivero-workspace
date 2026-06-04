@@ -2140,6 +2140,68 @@ footer#site-footer {
           </div>
         </div>
 
+        <!-- ── SECTION: GITHUB SYNC ── -->
+        <div class="ql-marble-card" data-section-id="github-sync">
+          <div class="ql-section-header">
+            <div class="ql-drag-handle" title="Drag untuk susun ulang"><span></span><span></span><span></span></div>
+            <span class="ql-section-icon">🐙</span>
+            <span class="ql-section-label">GitHub Sync — Publish ke Semua Visitor</span>
+            <span class="ql-section-badge" style="background:rgba(96,165,250,0.1);color:#60a5fa;border-color:rgba(96,165,250,0.2);">🌐 Global</span>
+          </div>
+
+          <!-- Info box -->
+          <div style="background:rgba(96,165,250,0.05);border:1px solid rgba(96,165,250,0.15);border-radius:6px;padding:14px 16px;margin-bottom:20px;display:flex;gap:10px;">
+            <span style="font-size:18px;flex-shrink:0;">💡</span>
+            <div style="font-size:12px;color:rgba(245,240,232,0.75);line-height:1.8;">
+              <strong style="color:#93c5fd;">Cara kerja:</strong> Setelah kamu simpan perubahan + klik <em>Push ke GitHub</em>, file <code style="background:rgba(255,255,255,0.06);padding:1px 6px;border-radius:3px;">content.json</code> di repo akan diupdate otomatis. Website semua visitor akan refresh dalam ~30 detik (GitHub Pages deploy).
+              <br><strong style="color:#fca5a5;">Penting:</strong> Token tersimpan di browser kamu saja (tidak dikirim ke server lain).
+            </div>
+          </div>
+
+          <!-- Config fields -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+            <div>
+              <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">GitHub Username / Org</label>
+              <input type="text" class="admin-text-input" id="admin-gh-owner" placeholder="rivero-workspace" style="margin-bottom:0;">
+            </div>
+            <div>
+              <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Nama Repo</label>
+              <input type="text" class="admin-text-input" id="admin-gh-repo" placeholder="riveroworkspace" style="margin-bottom:0;">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 2fr;gap:14px;margin-bottom:14px;">
+            <div>
+              <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Branch</label>
+              <input type="text" class="admin-text-input" id="admin-gh-branch" placeholder="main" style="margin-bottom:0;">
+            </div>
+            <div>
+              <label style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray);display:block;margin-bottom:8px;">Personal Access Token (PAT)</label>
+              <input type="password" class="admin-text-input" id="admin-gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="margin-bottom:0;">
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div id="admin-gh-status" style="min-height:20px;margin-bottom:14px;font-size:12px;color:var(--gray);"></div>
+
+          <!-- Action buttons -->
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+            <button class="admin-save-btn" onclick="adminSaveGitHubConfig()">💾 Simpan Config</button>
+            <button onclick="adminPushToGitHub()" style="background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.3);color:#60a5fa;padding:12px 24px;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;" id="admin-gh-push-btn">🚀 Push Sekarang ke GitHub</button>
+            <a href="https://github.com/settings/tokens/new?scopes=repo&description=Rivero+Admin" target="_blank" style="font-size:11px;color:var(--gold);text-decoration:none;opacity:0.8;">↗ Buat PAT baru di GitHub</a>
+          </div>
+
+          <!-- Help -->
+          <div style="margin-top:16px;background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.1);border-radius:6px;padding:14px 16px;">
+            <div style="font-size:10px;color:var(--gold);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px;font-weight:700;">Cara buat PAT</div>
+            <ol style="font-size:11px;color:rgba(245,240,232,0.65);line-height:2.2;padding-left:18px;margin:0;">
+              <li>Klik link <em>Buat PAT baru</em> di atas → Login GitHub</li>
+              <li>Scroll ke bawah → centang <strong style="color:var(--cream);">repo</strong> (full control)</li>
+              <li>Klik <strong style="color:var(--cream);">Generate token</strong> → copy tokennya</li>
+              <li>Paste di field token di atas → Simpan Config → Push</li>
+            </ol>
+          </div>
+        </div>
+
         <!-- ── SECTION: SUPABASE SECTION REORDER ── -->
         <div class="ql-marble-card" data-section-id="site-settings">
           <div class="ql-section-header">
@@ -3442,10 +3504,19 @@ async function adminLoadStats() {
 }
 
 /* ─── SAVE ALL ─── */
-function adminSaveAll() {
+async function adminSaveAll() {
   adminSaveHome(true);
   adminSaveVenueCards(true);
-  adminToast('✅ Semua perubahan berhasil disimpan!');
+
+  // Push ke GitHub jika config tersedia
+  const cfg = JSON.parse(localStorage.getItem('rivero_gh_config') || '{}');
+  if (cfg.owner && cfg.repo && cfg.token) {
+    adminToast('⏳ Menyimpan & push ke GitHub...');
+    await adminPushToGitHub(true);
+    adminToast('🚀 Semua perubahan berhasil disimpan & di-push ke GitHub!');
+  } else {
+    adminToast('✅ Tersimpan lokal. Setup GitHub Sync untuk publish ke semua visitor.');
+  }
 }
 
 /* Load & apply all saved admin data */
@@ -3456,6 +3527,7 @@ function adminLoadAll() {
   adminApplyVenueCards();
   adminInitSortable();
   adminInitUploadZone();
+  adminLoadGitHubConfig();
   setTimeout(adminFetchCalendarEvents, 400);
 }
 
@@ -3692,7 +3764,170 @@ document.addEventListener('DOMContentLoaded', () => {
   adminApplyHome();
   adminApplyVenueImages();
   adminApplyVenueCards();
+  // Fetch content.json dari GitHub Pages untuk semua visitor
+  loadSiteContent();
 });
+
+/* ══════════════════════════════════════════════════════════
+   GITHUB SYNC — Push content.json ke repo
+══════════════════════════════════════════════════════════ */
+
+/* Simpan config GitHub ke localStorage */
+function adminSaveGitHubConfig() {
+  const owner  = (document.getElementById('admin-gh-owner')?.value || '').trim();
+  const repo   = (document.getElementById('admin-gh-repo')?.value  || '').trim();
+  const branch = (document.getElementById('admin-gh-branch')?.value || 'main').trim();
+  const token  = (document.getElementById('admin-gh-token')?.value || '').trim();
+  if (!owner || !repo || !token) {
+    adminToast('⚠️ Owner, repo, dan token wajib diisi!');
+    return;
+  }
+  localStorage.setItem('rivero_gh_config', JSON.stringify({ owner, repo, branch, token }));
+  const statusEl = document.getElementById('admin-gh-status');
+  if (statusEl) statusEl.innerHTML = '<span style="color:#4ade80;">✅ Config tersimpan di browser kamu.</span>';
+  adminToast('✅ GitHub config tersimpan!');
+}
+
+/* Load config ke form inputs saat admin panel dibuka */
+function adminLoadGitHubConfig() {
+  const cfg = JSON.parse(localStorage.getItem('rivero_gh_config') || '{}');
+  if (document.getElementById('admin-gh-owner'))  document.getElementById('admin-gh-owner').value  = cfg.owner  || '';
+  if (document.getElementById('admin-gh-repo'))   document.getElementById('admin-gh-repo').value   = cfg.repo   || '';
+  if (document.getElementById('admin-gh-branch')) document.getElementById('admin-gh-branch').value = cfg.branch || 'main';
+  if (document.getElementById('admin-gh-token'))  document.getElementById('admin-gh-token').value  = cfg.token  || '';
+  const statusEl = document.getElementById('admin-gh-status');
+  if (statusEl && cfg.owner && cfg.repo) {
+    statusEl.innerHTML = `<span style="color:var(--gold);">⚙️ Config: <strong>${cfg.owner}/${cfg.repo}</strong> (branch: ${cfg.branch || 'main'})</span>`;
+  }
+}
+
+/* Build content object dari localStorage */
+function adminBuildContentJSON() {
+  const homeData   = JSON.parse(localStorage.getItem('rivero_admin_home') || '{}');
+  const venueCards = JSON.parse(localStorage.getItem('rivero_admin_venue_cards') || '[]');
+  return {
+    hero_badge:    homeData.badge      || '',
+    hero_title:    homeData.title      || '',
+    hero_subtitle: homeData.subtitle   || '',
+    hero_desc:     homeData.desc       || '',
+    event_title:   homeData.eventTitle || '',
+    event_desc:    homeData.eventDesc  || '',
+    event_link:    homeData.eventLink  || '',
+    venue_cards:   venueCards,
+    updated_at:    new Date().toISOString(),
+  };
+}
+
+/* Push content.json ke GitHub repo */
+async function adminPushToGitHub(silent) {
+  const cfg = JSON.parse(localStorage.getItem('rivero_gh_config') || '{}');
+  if (!cfg.owner || !cfg.repo || !cfg.token) {
+    if (!silent) adminToast('⚠️ Setup GitHub config dulu di section GitHub Sync!');
+    return false;
+  }
+
+  const pushBtn = document.getElementById('admin-gh-push-btn');
+  if (pushBtn) { pushBtn.disabled = true; pushBtn.textContent = '⏳ Pushing...'; }
+
+  const statusEl = document.getElementById('admin-gh-status');
+  if (statusEl) statusEl.innerHTML = '<span style="color:var(--gold);">⏳ Menghubungi GitHub API...</span>';
+
+  const { owner, repo, branch = 'main', token } = cfg;
+  const path     = 'content.json';
+  const apiUrl   = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+  const headers  = {
+    'Authorization': `token ${token}`,
+    'Accept': 'application/vnd.github.v3+json',
+    'Content-Type': 'application/json',
+  };
+
+  try {
+    // 1. Cek SHA file lama (jika sudah ada)
+    let sha = null;
+    try {
+      const check = await fetch(`${apiUrl}?ref=${branch}`, { headers });
+      if (check.ok) { const d = await check.json(); sha = d.sha; }
+    } catch(_) {}
+
+    // 2. Encode content ke base64
+    const content    = adminBuildContentJSON();
+    const contentStr = JSON.stringify(content, null, 2);
+    const b64        = btoa(unescape(encodeURIComponent(contentStr)));
+
+    // 3. PUT ke GitHub
+    const body = {
+      message: `🛠️ Admin update: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`,
+      content: b64,
+      branch,
+    };
+    if (sha) body.sha = sha;
+
+    const res = await fetch(apiUrl, { method: 'PUT', headers, body: JSON.stringify(body) });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || `HTTP ${res.status}`);
+    }
+
+    if (statusEl) statusEl.innerHTML = `<span style="color:#4ade80;">🚀 Berhasil push ke GitHub! Website semua visitor update dalam ~30 detik.</span>`;
+    if (!silent) adminToast('🚀 Berhasil! Website update dalam ~30 detik.');
+    return true;
+
+  } catch (e) {
+    const msg = e.message || 'Unknown error';
+    if (statusEl) statusEl.innerHTML = `<span style="color:#f87171;">❌ Gagal: ${msg}</span>`;
+    if (!silent) adminToast('❌ Push gagal: ' + msg);
+    return false;
+
+  } finally {
+    if (pushBtn) { pushBtn.disabled = false; pushBtn.textContent = '🚀 Push Sekarang ke GitHub'; }
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   VISITOR SIDE — Load content.json dari GitHub Pages
+   Dipanggil saat halaman dibuka oleh semua visitor
+══════════════════════════════════════════════════════════ */
+async function loadSiteContent() {
+  try {
+    const res = await fetch('./content.json?t=' + Date.now(), { cache: 'no-cache' });
+    if (!res.ok) return; // file belum ada, pakai HTML default
+    const data = await res.json();
+    applySiteContent(data);
+  } catch(_) {
+    // Gagal fetch (dev local / file belum ada) — diam saja
+  }
+}
+
+function applySiteContent(data) {
+  if (!data) return;
+  if (data.hero_badge    && document.querySelector('.hero-badge'))
+    document.querySelector('.hero-badge').textContent = data.hero_badge;
+  if (data.hero_title    && document.querySelector('.hero-title'))
+    document.querySelector('.hero-title').innerHTML = data.hero_title.replace(/\*(.*?)\*/g, '<em style="color:var(--gold)">$1</em>') || data.hero_title;
+  if (data.hero_subtitle && document.querySelector('.hero-subtitle'))
+    document.querySelector('.hero-subtitle').textContent = data.hero_subtitle;
+  if (data.hero_desc     && document.querySelector('.hero-desc'))
+    document.querySelector('.hero-desc').textContent = data.hero_desc;
+  if (data.event_title   && document.querySelector('.event-title'))
+    document.querySelector('.event-title').textContent = data.event_title;
+  if (data.event_desc    && document.querySelector('.event-desc'))
+    document.querySelector('.event-desc').textContent = data.event_desc;
+  if (data.event_link) {
+    const evBtn = document.querySelector('.event-banner .btn-gold');
+    if (evBtn) evBtn.href = data.event_link;
+  }
+  if (data.venue_cards && data.venue_cards.length) {
+    const cards = document.querySelectorAll('#venues .venue-card');
+    cards.forEach((card, i) => {
+      if (!data.venue_cards[i]) return;
+      const nameEl = card.querySelector('.venue-name');
+      const descEl = card.querySelector('.venue-desc');
+      if (nameEl) nameEl.textContent = data.venue_cards[i].name;
+      if (descEl) descEl.textContent = data.venue_cards[i].desc;
+    });
+  }
+}
 
 /* Add Admin Panel to page titles */
 const origPageTitles = window.dbPageTitles;
