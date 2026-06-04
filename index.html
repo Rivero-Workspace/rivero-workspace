@@ -1974,6 +1974,15 @@ footer#site-footer {
     <!-- ADMIN PANEL PAGE -->
     <div class="db-page" id="db-page-admin">
 
+      <!-- Save All Bar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.22);border-radius:8px;margin-bottom:20px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:0.15em;text-transform:uppercase;">Admin Panel</div>
+          <div style="font-size:11px;color:var(--gray);margin-top:2px;">Edit konten website · Perubahan langsung aktif setelah disimpan</div>
+        </div>
+        <button onclick="adminSaveAll()" style="background:var(--gold);color:var(--black);border:none;padding:12px 28px;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;transition:background 0.2s;white-space:nowrap;" onmouseover="this.style.background='var(--gold-light)'" onmouseout="this.style.background='var(--gold)'">💾 Simpan Semua Perubahan</button>
+      </div>
+
       <!-- Drag & Drop Reorder Bar -->
       <div class="ql-reorder-bar" id="ql-reorder-bar" style="display:none;">
         <span>⠿ Urutan seksi telah diubah</span>
@@ -3432,6 +3441,13 @@ async function adminLoadStats() {
   }
 }
 
+/* ─── SAVE ALL ─── */
+function adminSaveAll() {
+  adminSaveHome(true);
+  adminSaveVenueCards(true);
+  adminToast('✅ Semua perubahan berhasil disimpan!');
+}
+
 /* Load & apply all saved admin data */
 function adminLoadAll() {
   adminApplyHome();
@@ -3445,8 +3461,29 @@ function adminLoadAll() {
 
 /* ── HOME EDITOR ── */
 function adminApplyHome() {
-  const saved = JSON.parse(localStorage.getItem('rivero_admin_home') || '{}');
-  // populate editor
+  let saved = JSON.parse(localStorage.getItem('rivero_admin_home') || '{}');
+
+  // Jika belum ada data di localStorage, baca dari DOM saat ini
+  if (!Object.keys(saved).length) {
+    const heroBadgeEl   = document.querySelector('.hero-badge');
+    const heroTitleEl   = document.querySelector('.hero-title');
+    const heroSubEl     = document.querySelector('.hero-subtitle');
+    const heroDescEl    = document.querySelector('.hero-desc');
+    const eventTitleEl  = document.querySelector('.event-title');
+    const eventDescEl   = document.querySelector('.event-desc');
+    const evBtn         = document.querySelector('.event-banner .btn-gold');
+    saved = {
+      badge:      heroBadgeEl  ? heroBadgeEl.textContent.trim()  : '',
+      title:      heroTitleEl  ? heroTitleEl.textContent.trim()  : '',
+      subtitle:   heroSubEl    ? heroSubEl.textContent.trim()    : '',
+      desc:       heroDescEl   ? heroDescEl.textContent.trim()   : '',
+      eventTitle: eventTitleEl ? eventTitleEl.textContent.trim() : '',
+      eventDesc:  eventDescEl  ? eventDescEl.textContent.trim()  : '',
+      eventLink:  evBtn        ? evBtn.getAttribute('href') || '' : '',
+    };
+  }
+
+  // Populate form inputs
   if (document.getElementById('admin-hero-badge'))    document.getElementById('admin-hero-badge').value    = saved.badge    || '';
   if (document.getElementById('admin-hero-title'))    document.getElementById('admin-hero-title').value    = saved.title    || '';
   if (document.getElementById('admin-hero-subtitle')) document.getElementById('admin-hero-subtitle').value = saved.subtitle || '';
@@ -3454,20 +3491,26 @@ function adminApplyHome() {
   if (document.getElementById('admin-event-title'))   document.getElementById('admin-event-title').value   = saved.eventTitle || '';
   if (document.getElementById('admin-event-desc'))    document.getElementById('admin-event-desc').value    = saved.eventDesc  || '';
   if (document.getElementById('admin-event-link'))    document.getElementById('admin-event-link').value    = saved.eventLink  || '';
-  // apply to live website
-  if (saved.badge    && document.querySelector('.hero-badge'))    document.querySelector('.hero-badge').textContent    = saved.badge;
-  if (saved.title    && document.querySelector('.hero-title'))    document.querySelector('.hero-title').innerHTML       = saved.title.replace('*', '<em style="color:var(--gold)">') + (saved.title.includes('*') ? '</em>' : '');
-  if (saved.subtitle && document.querySelector('.hero-subtitle')) document.querySelector('.hero-subtitle').textContent = saved.subtitle;
-  if (saved.desc     && document.querySelector('.hero-desc'))     document.querySelector('.hero-desc').textContent     = saved.desc;
-  if (saved.eventTitle && document.querySelector('.event-title')) document.querySelector('.event-title').textContent = saved.eventTitle;
-  if (saved.eventDesc  && document.querySelector('.event-desc'))  document.querySelector('.event-desc').textContent  = saved.eventDesc;
-  if (saved.eventLink) {
+
+  // Apply ke website (hanya jika ada di localStorage — bukan fallback DOM)
+  const ls = JSON.parse(localStorage.getItem('rivero_admin_home') || 'null');
+  if (!ls) return; // Belum pernah di-save, skip apply ke website
+  if ('badge'      in ls && document.querySelector('.hero-badge'))    document.querySelector('.hero-badge').textContent    = ls.badge;
+  if ('title'      in ls && document.querySelector('.hero-title')) {
+    const t = ls.title;
+    document.querySelector('.hero-title').innerHTML = t.replace(/\*(.*?)\*/g, '<em style="color:var(--gold)">$1</em>') || t;
+  }
+  if ('subtitle'   in ls && document.querySelector('.hero-subtitle')) document.querySelector('.hero-subtitle').textContent = ls.subtitle;
+  if ('desc'       in ls && document.querySelector('.hero-desc'))     document.querySelector('.hero-desc').textContent     = ls.desc;
+  if ('eventTitle' in ls && document.querySelector('.event-title'))   document.querySelector('.event-title').textContent   = ls.eventTitle;
+  if ('eventDesc'  in ls && document.querySelector('.event-desc'))    document.querySelector('.event-desc').textContent    = ls.eventDesc;
+  if ('eventLink'  in ls) {
     const evBtn = document.querySelector('.event-banner .btn-gold');
-    if (evBtn) evBtn.href = saved.eventLink;
+    if (evBtn && ls.eventLink) evBtn.href = ls.eventLink;
   }
 }
 
-function adminSaveHome() {
+function adminSaveHome(silent) {
   const data = {
     badge:      document.getElementById('admin-hero-badge').value.trim(),
     title:      document.getElementById('admin-hero-title').value.trim(),
@@ -3489,7 +3532,7 @@ function adminSaveHome() {
       updated_by: currentUser.email
     }, { onConflict: 'key' });
   }
-  adminToast('✅ Perubahan Home disimpan!');
+  if (!silent) adminToast('✅ Perubahan Home disimpan!');
 }
 
 /* ── VENUE IMAGES ── */
@@ -3598,7 +3641,7 @@ function adminBuildVenueCardEditor() {
   `).join('');
 }
 
-function adminSaveVenueCards() {
+function adminSaveVenueCards(silent) {
   const saved = JSON.parse(localStorage.getItem('rivero_admin_venue_cards') || '[]');
   const data  = saved.length ? saved : DEFAULT_VENUE_CARDS;
   data.forEach((v, i) => {
@@ -3619,7 +3662,7 @@ function adminSaveVenueCards() {
       updated_by: currentUser.email
     }, { onConflict: 'key' });
   }
-  adminToast('✅ Venue cards disimpan!');
+  if (!silent) adminToast('✅ Venue cards disimpan!');
 }
 
 function adminApplyVenueCards() {
