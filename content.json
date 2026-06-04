@@ -1,0 +1,42 @@
+{
+  "hero_badge": "Surabaya's Premier Workspace · June 2026",
+  "hero_title": "Junevolve Complete Your Dreams",
+  "hero_subtitle": "",
+  "hero_desc": "",
+  "event_title": "",
+  "event_desc": "",
+  "event_link": "",
+  "venue_cards": [
+    {
+      "tag": "Virtual Office",
+      "name": "Virtual Office",
+      "desc": "A professional business address in Surabaya without the overhead. Get a prestigious address, mail handling, and phone reception services.",
+      "icon": "🌐"
+    },
+    {
+      "tag": "Private Office",
+      "name": "Private Office",
+      "desc": "Your own dedicated, lockable office space. Fully furnished and ready to use, with all utilities included for your team.",
+      "icon": "🏢"
+    },
+    {
+      "tag": "Meeting Room",
+      "name": "Meeting Room",
+      "desc": "Professional meeting rooms equipped with the latest tech for presentations, video calls, and collaborative sessions.",
+      "icon": "🤝"
+    },
+    {
+      "tag": "Ballroom",
+      "name": "Ballroom",
+      "desc": "An elegant, spacious ballroom perfect for corporate events, product launches, seminars, and grand celebrations.",
+      "icon": "🎊"
+    },
+    {
+      "tag": "Workspace",
+      "name": "Coworking Space",
+      "desc": "A vibrant, open coworking environment designed for productivity and community. Flexible daily, weekly, or monthly plans available.",
+      "icon": "💼"
+    }
+  ],
+  "updated_at": "2026-06-04T09:22:29.402Z"
+}
